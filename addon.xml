@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="service.kodilive.translator.ai"
+       name="KodiLive SRT Translator AI"
+       version="1.9.1"
+       provider-name="Irek Kutrzuba">
+
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.requests" version="2.25.1"/>
+    </requires>
+
+    <extension point="xbmc.service"
+               library="service.py"
+               start="startup" />
+
+    <extension point="xbmc.addon.metadata">
+        <summary lang="pl">Tłumacz napisów SRT z wykorzystaniem AI</summary>
+        <description lang="pl">Tłumaczenie live napisów angielskich na polskie przez OpenAI</description>
+        <platform>all</platform>
+    </extension>
+
+</addon>

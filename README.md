@@ -1,2 +1,9 @@
-# service.kodilive.translator.ai
-Kodi Live SRT Translator - tłumaczy z języka angielskiego na polski "w locie" pobrane do filmu napisy SRT
+Kodi Live SRT Translator to dodatek do Kodi, który tłumaczyz pomocą AI „na żywo” napisy SRT z języka angielskiego na polski i wyświetla je na filmie/serialu.
+Do działania wymaga API Key OpenAi
+Kodi Live Translator działa w tle. Gdy chcemy tłumaczyć napisy, wchodzimy, przykładowo, do FenLightAM, wybieramy i uruchamiamy film/serial, następnie wczytujemy pasujące angielskie napisy np. z OpenSubtitles. Dodatek zaczyna działać od razu, jednak przez około minutę do półtorej widzimy na ekranie tylko napisy angielskie. W momencie, gdy w wyskakującym oknie pojawia się informacja „Turbo start”, wyświetlane napisy zmieniają się na polskie. 
+Ta krótka przerwa na początku to czas potrzebny na przesłanie do AI, przetłumaczenie i powrót pierwszej partii napisów. Oczywiście w tym momencie możemy wrócić do początku filmu i sobie oglądać z napisami, można też wcześniej dać pauzę i czekać na całość tłumaczenia, po czym włączyć play.
+Od tej pory na ekranie widzimy przetłumaczone, polskie  napisy, ale z jednym małym wyjątkiem. Przed końcem tłumaczenia całości pliku z napisami (trwa to od 6 do 10 minut, w zależności od wielkości - liczby znaków - pliku z napisami), polskie napisy znikają na kilkadziesiąt sekund, po czym wracają już z w pełni przetłumaczonego pliku. Informuje o tym kolejne wyskakujące okno: „Napisy przetłumaczone”.
+ Napisy już przetłumaczone zapisują się na stałe w katalogu /sdcard/0/Kodi_Napisy, z nazwą filmu i dodatkiem w nazwie TRANS_PL. Można z nich korzystać później, archiwizować itp.
+Jakościowo napisy są o niebo lepsze od mechanicznego tłumaczenia różnych translatorów, ale nie idealne.
+W konfiguracji mamy wybór między GPT 4o-mini i GPT 4o. GPT 4o-mini to mniejsze zużycie tokenów, trochę wolniejsze i jakościowo słabsze tłumaczenie. GPT 4o to więcej tokenów, ale lepsza szybkość i jakość.
+Bardzo proszę o uwagi i sugestie, odpowiem też na pytania. W wolnych chwilach będę chciał usprawniać program. 

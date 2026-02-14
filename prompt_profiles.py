@@ -1,0 +1,1 @@
+def get_movie_profile(): return "Translate to Polish"
