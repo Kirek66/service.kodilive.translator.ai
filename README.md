@@ -7,3 +7,4 @@ Napisy już przetłumaczone zapisują się na stałe w katalogu /storage/emulate
 Jakościowo napisy są o niebo lepsze od mechanicznego tłumaczenia różnych translatorów, ale nie idealne.
 W konfiguracji mamy wybór między GPT 4o-mini i GPT 4o. GPT 4o-mini to mniejsze zużycie tokenów, trochę wolniejsze i jakościowo słabsze tłumaczenie. GPT 4o to więcej tokenów, ale lepsza szybkość i jakość.
 Bardzo proszę o uwagi i sugestie, odpowiem też na pytania. W wolnych chwilach będę chciał usprawniać program.
+
