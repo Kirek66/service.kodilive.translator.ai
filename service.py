@@ -11,37 +11,45 @@ def has_polish_chars(text):
 def clean_markdown(text):
     return text.replace("```srt", "").replace("```", "").strip()
 
+def strip_html(text):
+    return re.sub(r'<[^>]*>', '', text)
+
 def clean_sdh(text):
     text = re.sub(r"\[(.*?)\]", "", text)
     text = re.sub(r"\((.*?)\)", "", text)
     return text.strip()
 
-# --- NOWE: usuwanie tekstów piosenek ---
+def clean_empty_dialogues(text):
+    blocks = text.strip().split("\n\n")
+    cleaned_blocks = []
+    for block in blocks:
+        lines = block.split("\n")
+        if len(lines) >= 3:
+            body = "\n".join(lines[2:])
+            # Jeśli to reklama strony www - pomiń
+            if "www." in body.lower() or ".org" in body.lower():
+                continue
+            # Jeśli w bloku jest jakakolwiek litera lub cyfra - zostaw go
+            if re.search(r'[a-zA-Z0-9]', strip_html(body)):
+                cleaned_blocks.append(block)
+    return "\n\n".join(cleaned_blocks)
+
 def remove_song_lines(text):
     lines = text.split("\n")
     cleaned = []
     for line in lines:
         stripped = line.strip()
-        # usuń linie zawierające symbole muzyczne
-        if re.search(r"[♪♫♬♩]", stripped):
-            continue
-        # usuń linie zaczynające się od # (częste w liryce)
-        if stripped.startswith("#"):
-            continue
-        # usuń linie całkowicie pisane wielkimi literami w nawiasach (częste przy piosenkach)
-        if re.match(r"^\(.*\)$", stripped) and stripped.upper() == stripped:
-            continue
+        if re.search(r"[♪♫♬♩]", stripped): continue
+        if stripped.startswith("#"): continue
+        if re.match(r"^\(.*\)$", stripped) and stripped.upper() == stripped: continue
         cleaned.append(line)
     return "\n".join(cleaned)
 
-# --- NOWE: usuwanie prefixów typu "Mary: Tekst" ---
 def remove_speaker_prefix(text):
     lines = text.split("\n")
     cleaned = []
     for line in lines:
-        # usuń prefix typu IMIĘ:
         line = re.sub(r"^[A-ZŁŚŻŹĆŃÓ][A-Za-zŁŚŻŹĆŃÓąćęłńóśźż\-']{1,20}:\s*", "", line)
-        # usuń prefix typu MAN:, WOMAN:, JOHN:
         line = re.sub(r"^[A-Z ]{2,20}:\s*", "", line)
         cleaned.append(line)
     return "\n".join(cleaned)
@@ -62,21 +70,25 @@ def wrap_line(line, max_len=MAX_LINE_LENGTH):
     return "\n".join(lines)
 
 def fix_srt_format(text):
+    # Najpierw usuwamy kody HTML (kolory), które psują wyświetlanie w Kodi
+    text = strip_html(text)
     blocks = text.split("\n\n")
     fixed = []
     for block in blocks:
         lines = block.strip().split("\n")
         if len(lines) < 3: continue
         num, time = lines[0], lines[1]
-
         body_text = " ".join(lines[2:])
+        
+        # Jeśli po oczyszczeniu nie ma tekstu - pomiń
+        if not re.search(r'[a-zA-Z0-9]', body_text): continue
+
         body_text = clean_sdh(body_text)
         body_text = remove_song_lines(body_text)
         body_text = remove_speaker_prefix(body_text)
 
         body = wrap_line(body_text.strip())
-        if not body.strip():
-            continue
+        if not body.strip(): continue
 
         fixed.append("\n".join([num, time] + body.split("\n")))
     return "\n\n".join(fixed)
@@ -91,6 +103,7 @@ def get_temp_sub_file():
     except: return None, 0
 
 def build_chunks(text, max_chars=5000):
+    text = clean_empty_dialogues(text)
     blocks = text.strip().split("\n\n")
     chunks, current = [], ""
     for b in blocks:
@@ -136,25 +149,23 @@ def run():
                 )
 
                 chunks = build_chunks(original)
-                translated_chunks, last_notified = [], -1
+                if not chunks: continue
                 
+                translated_chunks, last_notified = [], -1
                 title = player.getVideoInfoTag().getTitle() or "Film"
                 safe_title = re.sub(r'[\\/*?:"<>|]', '', title).replace(' ', '_')
                 final_path = os.path.join(sub_dir, safe_title + "_TRANS_PL.srt")
 
-                for i, chunk in enumerate(chunks):
+                for chunk in chunks:
                     if not player.isPlaying(): break
-                    
                     response = None
                     for attempt in range(3):
                         try:
                             response = openai_client.translate_text(api_key, chunk, prompt, model)
                             if response: break
-                        except:
-                            xbmc.sleep(2000)
+                        except: xbmc.sleep(2000)
                     
                     if not response: break
-                    
                     translated_chunks.append(clean_markdown(response))
                     progress = int((len(translated_chunks)/len(chunks))*100)
 
@@ -171,7 +182,7 @@ def run():
                     w.write(fix_srt_format("\n\n".join(translated_chunks)))
                     w.close()
                     player.setSubtitles(final_path)
-                    xbmc.executebuiltin("Notification(KodiLive SRT, Tłumaczenie zakończone, plik zapisany, 3000)")
+                    xbmc.executebuiltin("Notification(KodiLive SRT, Plik zapisany, 3000)")
 
         if monitor.waitForAbort(3): break
 
