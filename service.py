@@ -56,41 +56,118 @@ def remove_speaker_prefix(text):
 
 def wrap_line(line, max_len=MAX_LINE_LENGTH):
     words = line.split()
-    if not words: return line
-    lines, current = [], words[0]
-    for w in words[1:]:
-        if len(current) + len(w) + 1 <= max_len:
+    if not words:
+        return line
+
+    full_text = " ".join(words)
+
+    # Jeśli mieści się w jednej linii – zwracamy bez dzielenia
+    if len(full_text) <= max_len:
+        return full_text
+
+    # Szukamy najlepszego miejsca podziału
+    best_split = None
+    best_balance = None
+
+    # Spójniki preferowane do cięcia (na końcu pierwszej linii)
+    preferred_words = {
+        "że","ale","bo","więc","żeby",
+        "który","która","które","którzy",
+        "gdy","kiedy","jeśli","choć","ponieważ"
+    }
+
+    # Jednoliterowe sieroty (nie mogą zostać na końcu linii)
+    orphans = {"i","a","o","u","w","z"}
+
+    for i in range(1, len(words)):
+        left_words = words[:i]
+        right_words = words[i:]
+
+        # Sprawdzenie orphanów (bez przecinków/kropek)
+        last_word_clean = left_words[-1].lower().strip(",.!?;:")
+
+        if last_word_clean in orphans:
+            continue  # pomijamy ten podział
+
+        left = " ".join(left_words)
+        right = " ".join(right_words)
+
+        if len(left) <= max_len and len(right) <= max_len:
+            balance = abs(len(left) - len(right))
+            score = balance
+
+            # Bonus za przecinek na końcu pierwszej linii
+            if left.endswith(","):
+                score -= 5
+
+            # Bonus za spójnik jako ostatnie słowo pierwszej linii
+            if last_word_clean in preferred_words:
+                score -= 3
+
+            if best_split is None or score < best_balance:
+                best_split = (left, right)
+                best_balance = score
+
+    # Jeśli znaleźliśmy elegancki podział
+    if best_split:
+        return best_split[0] + "\n" + best_split[1]
+
+    # Fallback: twarde zawijanie do 38 znaków bez przekroczeń
+    lines = []
+    current = ""
+
+    for w in words:
+        if not current:
+            current = w
+        elif len(current) + len(w) + 1 <= max_len:
             current += " " + w
         else:
-            lines.append(current)
-            current = w
-    lines.append(current)
-    if len(lines) > 2:
-        lines = [lines[0], " ".join(lines[1:])]
-    return "\n".join(lines)
+            # Sprawdź czy nie zostawiamy orphan na końcu
+            last_word_clean = current.split()[-1].lower().strip(",.!?;:")
+            if last_word_clean in orphans and lines:
+                # przenieś orphan do następnej linii
+                prev_words = current.split()
+                orphan = prev_words.pop()
+                lines.append(" ".join(prev_words))
+                current = orphan + " " + w
+            else:
+                lines.append(current)
+                current = w
+
+        if len(lines) == 2:
+            break
+
+    if current and len(lines) < 2:
+        lines.append(current)
+
+    return "\n".join(lines[:2])
 
 def fix_srt_format(text):
-    # Najpierw usuwamy kody HTML (kolory), które psują wyświetlanie w Kodi
     text = strip_html(text)
     blocks = text.split("\n\n")
     fixed = []
+
     for block in blocks:
         lines = block.strip().split("\n")
-        if len(lines) < 3: continue
+        if len(lines) < 3:
+            continue
+
         num, time = lines[0], lines[1]
-        body_text = " ".join(lines[2:])
-        
-        # Jeśli po oczyszczeniu nie ma tekstu - pomiń
-        if not re.search(r'[a-zA-Z0-9]', body_text): continue
+        body = " ".join(lines[2:])
 
-        body_text = clean_sdh(body_text)
-        body_text = remove_song_lines(body_text)
-        body_text = remove_speaker_prefix(body_text)
+        # jeśli po oczyszczeniu nie ma tekstu – pomiń
+        if not re.search(r'[a-zA-Z0-9]', body):
+            continue
 
-        body = wrap_line(body_text.strip())
-        if not body.strip(): continue
+        body = clean_sdh(body)
+        body = body.replace("--", "...")
+        body = wrap_line(body.strip())
+
+        if not body.strip():
+            continue
 
         fixed.append("\n".join([num, time] + body.split("\n")))
+
     return "\n\n".join(fixed)
 
 def get_temp_sub_file():
@@ -135,7 +212,10 @@ def run():
                 original = f.read()
                 f.close()
                 if not original.strip() or has_polish_chars(original): continue
-
+                # Usunięcie SDH i tekstów piosenek PRZED tłumaczeniem
+                original = clean_sdh(original)
+                original = remove_song_lines(original)
+                original = remove_speaker_prefix(original)
                 prompt = (
                     "Translate SRT subtitles from English to Polish.\n"
                     "Keep numbering and timestamps unchanged.\n"

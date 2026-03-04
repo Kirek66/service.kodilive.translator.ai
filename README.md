@@ -1,10 +1,11 @@
-Kodi Live SRT Translator to dodatek do Kodi, który tłumaczyz pomocą AI „na żywo” napisy SRT z języka angielskiego na polski i wyświetla je na filmie/serialu.
+Kodi Live SRT Translator to dodatek do Kodi, który tłumaczy z pomocą GPT-4o lub GPT-4o-mini „na żywo” napisy SRT z języka angielskiego na polski i poprzetłumaczeniu pierwszej partii wyświetla je do końca na filmie/serialu oraz zapisuje w pliku.
 Do działania wymaga API Key OpenAI.
 Kodi Live Translator działa w tle. Gdy chcemy tłumaczyć napisy, wchodzimy, przykładowo, do FenLightAM, wybieramy i uruchamiamy film/serial, następnie wczytujemy pasujące angielskie napisy np. z OpenSubtitles. Dodatek zaczyna działać od razu, jednak przez około minutę do półtorej widzimy na ekranie tylko napisy angielskie. W momencie, gdy w wyskakującym oknie pojawia się informacja „Tłumaczenie x%, wyświetlane napisy zmieniają się na polskie.
 Ta krótka przerwa na początku to czas potrzebny na przesłanie do AI, przetłumaczenie i powrót pierwszej partii napisów. Oczywiście w tym momencie możemy wrócić do początku filmu i sobie oglądać z napisami, można też wcześniej dać pauzę i czekać na całość tłumaczenia, po czym włączyć play.
-Od tej pory na ekranie widzimy przetłumaczone polskie  napisy i co pewien czas wyskakujące okno z procentową informacją o postępie tłumaczenia. Tłumaczenie kończy się wraz z informacją o 100% i komunikatem „Napisy przetłumaczone”.
+Od tej pory na ekranie widzimy przetłumaczone polskie  napisy i co pewien czas wyskakujące okno z procentową informacją o postępie tłumaczenia. Tłumaczenie kończy się wraz z informacją o 100% i komunikatem „Plik zapisany”.
 Napisy już przetłumaczone zapisują się na stałe w katalogu /storage/emulated/0/Kodi_Napisy, z nazwą filmu i dodatkiem w nazwie TRANS_PL. Można z nich korzystać później, archiwizować itp.
 Jakościowo napisy są o niebo lepsze od mechanicznego tłumaczenia różnych translatorów, ale nie idealne.
-W konfiguracji mamy wybór między GPT 4o-mini i GPT 4o. GPT 4o-mini to mniejsze zużycie tokenów, trochę wolniejsze i jakościowo słabsze tłumaczenie. GPT 4o to więcej tokenów, ale lepsza szybkość i jakość.
+W konfiguracji mamy wybór między GPT 4o-mini i GPT 4o. GPT 4o-mini to mniejsze zużycie tokenów i spora szybkość. GPT 4o to więcej tokenów, ale lepsza jakość tłumaczenia.
+W wersji 1.0.5 poprawiona została struktura przetłumaczonego pliku SRT: jest ona w stylu Netflix, czyli maksimum dwie linie i 38 znaków w linii, usuwane są teksty piosenek i znaczmiki SDH dla niesłyszących, różne śmieci pojawiające się w plikach SRT, częste błędne znaki"--" zamieniane są na wilokropek. Przyśpieszone zostało tłumaczenie, usunięto niepotrzebne "ozdobniki".
 Bardzo proszę o uwagi i sugestie, odpowiem też na pytania. W wolnych chwilach będę chciał usprawniać program.
 
