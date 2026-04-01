@@ -161,6 +161,8 @@ def fix_srt_format(text):
 
         body = clean_sdh(body)
         body = body.replace("--", "...")
+        body = re.sub(r"—+", "...", body)
+        body = re.sub(r"\.{4,}", "...", body)
         body = wrap_line(body.strip())
 
         if not body.strip():
@@ -205,7 +207,7 @@ def run():
                 last_mtime = mtime
                 api_key = addon.getSetting("api_key").strip()
                 model_idx = int(addon.getSetting("model") or 0)
-                model = "gpt-4o-mini" if model_idx == 0 else "gpt-4o"
+                model = ["gpt-4o-mini", "gpt-4o", "gpt-5.4", "gpt-5.4-mini", "gpt-5.4-nano"][model_idx] if model_idx < 5 else "gpt-4o-mini"
                 if not api_key: continue
 
                 f = xbmcvfs.File(sub_file, "r")
